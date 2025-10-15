@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kết quả phân tích - AI Object Recognition</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            margin: 30px auto;
+            padding: 40px;
+            max-width: 1200px;
+        }
+        
+        .result-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .image-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .result-image {
+            max-width: 100%;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .stats-card {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 15px 0;
+            text-align: center;
+        }
+        
+        .stats-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .stats-label {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .person-card {
+            background: #f8f9ff;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 15px 0;
+            border-left: 5px solid #667eea;
+        }
+        
+        .person-info {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+        
+        .person-info i {
+            width: 30px;
+            color: #667eea;
+            margin-right: 15px;
+        }
+        
+        .badge-custom {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .navbar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            color: #667eea !important;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-weight: 600;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            border: none;
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-weight: 600;
+        }
+        
+        .scene-info {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 15px 0;
+            text-align: center;
+        }
+        
+        .objects-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .object-badge {
+            background: #17a2b8;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .no-objects {
+            color: #6c757d;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-brain"></i> AI Object Recognition
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/">
+                    <i class="fas fa-home"></i> Trang chủ
+                </a>
+                <a class="nav-link" href="/history">
+                    <i class="fas fa-history"></i> Lịch sử
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="main-container">
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <h1 class="display-5 fw-bold text-primary mb-3">
+                    <i class="fas fa-chart-line"></i> Kết quả phân tích
+                </h1>
+                <p class="lead text-muted">
+                    File: {{ result.filename }}
+                </p>
+            </div>
+
+            <!-- Images -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="result-card">
+                        <h5 class="mb-3">
+                            <i class="fas fa-image"></i> Ảnh gốc
+                        </h5>
+                        <div class="image-container">
+                            <img src="{{ result.original_image }}" alt="Ảnh gốc" class="result-image">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    {% if result.result_image %}
+                    <div class="result-card">
+                        <h5 class="mb-3">
+                            <i class="fas fa-search"></i> Ảnh kết quả
+                        </h5>
+                        <div class="image-container">
+                            <img src="{{ result.result_image }}" alt="Ảnh kết quả" class="result-image">
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Statistics -->
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-number">{{ result.analysis.total_people }}</div>
+                        <div class="stats-label">
+                            <i class="fas fa-user-friends"></i> Người
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-number">{{ result.analysis.total_objects }}</div>
+                        <div class="stats-label">
+                            <i class="fas fa-mobile-alt"></i> Vật dụng
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-number">{{ "%.1f"|format(result.analysis.scene_confidence * 100) }}%</div>
+                        <div class="stats-label">
+                            <i class="fas fa-cloud-sun"></i> Độ tin cậy
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-number">{{ result.analysis.person_results|length }}</div>
+                        <div class="stats-label">
+                            <i class="fas fa-users"></i> Đã phân tích
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scene Information -->
+            <div class="scene-info">
+                <h5 class="mb-3">
+                    <i class="fas fa-map-marker-alt"></i> Phong cảnh
+                </h5>
+                <h4>{{ result.analysis.scene }}</h4>
+                <p class="mb-0">Độ tin cậy: {{ "%.1f"|format(result.analysis.scene_confidence * 100) }}%</p>
+            </div>
+
+            <!-- Person Analysis -->
+            {% if result.analysis.person_results %}
+            <div class="result-card">
+                <h5 class="mb-4">
+                    <i class="fas fa-user-friends"></i> Phân tích từng người
+                </h5>
+                
+                {% for person in result.analysis.person_results %}
+                <div class="person-card">
+                    <h6 class="mb-3">
+                        <i class="fas fa-user"></i> Người {{ person.person_id }}
+                    </h6>
+                    
+                    <div class="person-info">
+                        <i class="fas fa-venus-mars"></i>
+                        <strong>Giới tính:</strong>
+                        <span class="badge-custom ms-2">{{ person.gender }}</span>
+                    </div>
+                    
+                    <div class="person-info">
+                        <i class="fas fa-tshirt"></i>
+                        <strong>Màu áo:</strong>
+                        <span class="badge-custom ms-2">{{ person.clothing_color }}</span>
+                    </div>
+                    
+                    <div class="person-info">
+                        <i class="fas fa-mobile-alt"></i>
+                        <strong>Vật dụng:</strong>
+                        {% if person.objects %}
+                            <div class="objects-list">
+                                {% for obj in person.objects %}
+                                <span class="object-badge">{{ obj }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <span class="no-objects ms-2">Không có</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="person-info">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <strong>Phong cảnh:</strong>
+                        <span class="badge-custom ms-2">{{ person.scene }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="result-card text-center">
+                <h5 class="text-muted">
+                    <i class="fas fa-info-circle"></i> Không phát hiện người nào trong ảnh
+                </h5>
+                <p class="text-muted">Vui lòng thử với ảnh khác có chứa người.</p>
+            </div>
+            {% endif %}
+
+            <!-- Actions -->
+            <div class="text-center mt-4">
+                <a href="/" class="btn btn-primary me-3">
+                    <i class="fas fa-upload"></i> Phân tích ảnh khác
+                </a>
+                <a href="/history" class="btn btn-secondary">
+                    <i class="fas fa-history"></i> Xem lịch sử
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
